@@ -8,7 +8,7 @@ db = brickman_database()
 buoys = buoys |> 
   filter(id == "M01")
 db = db |> 
-  filter(scenario == "PRESENT", interval == "mon")
+  filter(scenario == "RCP45", interval == "mon", year =="2055")
 covars = read_brickman(db)
 x = extract_brickman(covars, buoys, form = "wide")
 x = x |>
