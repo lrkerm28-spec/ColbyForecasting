@@ -1,0 +1,125 @@
+---
+title: "Assignment 3"
+output: github_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+source("/home/lrkerm28/ColbyForecasting/setup.R")
+#source("setup.R")
+```
+
+```{r load_obs_mask, include=TRUE}
+coast = read_coastline()
+obs = read_observations(scientificname = "Ammodytes dubius")
+db = brickman_database() |>
+  filter(scenario == "STATIC", var == "mask")
+mask = read_brickman(db)
+```
+## Read secondary species
+
+Download the data from obis on Ammodytes dubius, then it can be made into a variable.
+```{r read_obis_data, include=TRUE}
+sand_lance = fetch_obis(scientificname = "Ammodytes dubius")
+```
+## Filter New Data
+
+We use "read_observations()" to filter the NAs and not needed information out of the data. We then give it a summary to check that all of the NAs have been filtered out.
+```{r filter_out_NAs, include=TRUE}
+sand_lance = read_observations(scientificname = "Ammodytes dubius")
+summary(sand_lance)
+```
+## Making Background and Presence Data
+With code provided from the C02_background doc, we can see/make the background and save it in a readable file for the next tasks.
+
+
+
+```{r all_observations_count}
+LON0 = -67
+LAT0 = 46
+all_counts = count(st_drop_geometry(obs), month) # counting is faster without spatial baggage
+all_counts
+```
+```{r all_observations}
+ggplot() +
+  geom_sf(data = obs, alpha = 0.2, shape = "circle small", size = 1) +
+  geom_sf(data = coast, col = "orange") +
+  geom_text(data = all_counts,
+            mapping = aes(x = LON0, 
+                          y = LAT0, 
+                          label = sprintf("n: %i", .data$n)),
+                          size = 3) + 
+  labs(x = "Longitude", y = "Latitude", title = "All observations") +
+  facet_wrap(~month)
+```
+## Thin Data
+
+```{r thin_observations}
+thinned_obs = sapply(month.abb,
+               function(mon){ 
+                 thin_by_cell(obs |> filter(month == mon), mask)
+               }, simplify = FALSE) |>
+  dplyr::bind_rows() 
+
+# another count
+thinned_counts = count(st_drop_geometry(thinned_obs), month)
+
+ggplot() +
+  geom_sf(data = thinned_obs, 
+          alpha = 0.2, 
+          shape = "circle small", 
+          size = 1) +
+  geom_sf(data = coast, col = "orange") +
+  geom_text(data = thinned_counts,
+            mapping = aes(x = LON0, 
+                          y = LAT0, 
+                          label = sprintf("n: %i", .data$n)),
+                          size = 3) + 
+  labs(x = "Longitude", y = "Latitude", title = "Thinned observations") +
+  facet_wrap(~month)
+```
+## Weighted sampling
+```{r bias_map}
+bias_map = rasterize_point_density(obs, mask) # <-- note the original observations
+
+ggplot() +
+  geom_stars(data = bias_map, aes(fill = count)) +
+  scale_fill_viridis_b(na.value = "transparent") +
+  geom_sf(data = coast, col = "orange") + 
+  labs(x = "Longitude", y = "Latitude", title = "Bias map using all observations")
+```
+## Randomly sample background points
+```{r n_background_per_month}
+nback_avg = mean(all_counts$n) |>
+  round()
+nback_avg
+```
+```{r sample_background}
+obsbkg = sapply(month.abb,
+    function(mon){ 
+      sample_background(thinned_obs |> filter(month == mon), # <- just this month
+                       bias_map,
+                       method = "bias",  # <-- it needs to know it's a bias map
+                       return_pres = TRUE, # <-- give me the obs back, too
+                       n = nback_avg) |>   # <-- how many points
+        mutate(month = mon, .before = 1)
+    }, simplify = FALSE) |>
+  bind_rows() |>
+  mutate(month = factor(month, levels = month.abb))
+obsbkg 
+```
+## Last step to save it
+```{r save_model_input}
+write_model_input(obsbkg, scientificname = "Ammodytes dubius")
+```
+```{r read_model_input}
+x = read_model_input(scientificname = "Ammodytes dubius")
+```
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

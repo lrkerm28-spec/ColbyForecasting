@@ -1,0 +1,15 @@
+---
+title: "Untitled"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r source}
+source("/home/lrkerm28/ColbyForecasting/setup.R")
+```
+```{r obs}
+x = read_observations()
+```
