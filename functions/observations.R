@@ -1,5 +1,5 @@
 
-read_observations = function(scientificname = "Halichoerus grypus",
+read_observations = function(scientificname = "Halichoerus grypus", minimum_year = 1970,
                              remove_missing = c("eventDate", "year", "individualCount"),
                              ...){
   
