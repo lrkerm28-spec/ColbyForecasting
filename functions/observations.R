@@ -1,7 +1,6 @@
 
 read_observations = function(scientificname = "Halichoerus grypus",
-                             minimum_year = 1970, individual_number, 
-                             date, eventyear,
+                             remove_missing = c("eventDate", "year", "individualCount"),
                              ...){
   
   #' Read raw OBIS data and then filter it
@@ -24,20 +23,14 @@ read_observations = function(scientificname = "Halichoerus grypus",
       filter(year >= minimum_year)
   }
 
-  if(individual_number == 1)
-    {
-    x = x |>
-    filter(!is.na(individualCount))
+  if ("eventDate" %in% remove_missing){
+    x = x |> filter(!is.na(eventDate))
   }
-  if(date == 1)
-  {
-    x = x |>
-    filter(!is.na(eventDate))  
+  if ("year" %in% remove_missing){
+    x = x |> filter(!is.na(eventDate))
   }
-  if(eventyear == 1)
-  {
-  x = x |>
-  filter(!is.na(year))
+  if ("individualCount" %in% remove_missing){
+    x = x |> filter(!is.na(eventDate))
   }
   
   return(x)
