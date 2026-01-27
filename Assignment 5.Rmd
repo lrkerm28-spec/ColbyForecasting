@@ -1,0 +1,150 @@
+---
+title: "Assirngment 5"
+output: github_document
+---
+
+
+
+# Setup
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+source("/home/lrkerm28/ColbyForecasting/setup.R")
+```
+
+# Load the Brickman data
+ 
+```{r load_covar}
+cfg = read_configuration(scientificname = "Halichoerus grypus",
+                         version = "v1", 
+                         path = data_path("models"))
+db = brickman_database()
+db = brickman_database()
+present_conditions = read_brickman(db |> filter(scenario == "PRESENT", 
+                                                interval == "mon"),
+                       add = c("depth", "month")) |>
+  select(all_of(cfg$keep_vars))
+```
+
+# Load the workflow
+
+We read the model information we created.
+
+```{r load_workflow}
+model_fits = read_model_fit(filename = "Halichoerus_grypus-v1-model_fits")
+model_fits
+```
+
+
+# Make a prediction
+
+First we make a "nowcast" which is just a prediction of the current environmental conditions. 
+
+## Nowcast
+
+First make the prediction using `predict_stars()' to show the current probability of Grey Seals in different areas of the Gulf of Maine.
+
+```{r nowcast}
+nowcast = predict_stars(model_fits, present_conditions)
+nowcast
+```
+Now we can plot what is  called a "habitat suitability index" (hsi) map. 
+
+```{r plot_nowcast_maxent, warning = FALSE}
+plot_prediction(nowcast['default_btree'])
+```
+
+We can also plot a presence/absence labeled map.
+
+```{r plot_class_labels, warning = FALSE}
+pa_nowcast = threshold_prediction(nowcast, threshold = 0.4)
+plot_prediction(pa_nowcast['default_btree'])
+```
+
+## Forecast
+
+Now we forecast for RCP85 and 45 in 2075 and 2055. We plot this data/ predictions on a map of the Gulf of Maine
+
+```{r load_2075_RCP85, warning = FALSE}
+covars_rcp85_2075 = read_brickman(db |> filter(scenario == "RCP85", 
+                                               year == 2075, 
+                                               interval == "mon"),
+                                  add = c("depth", "month")) |>
+  select(all_of(cfg$keep_vars))
+covars_rcp85_2055 = read_brickman(db |> filter(scenario == "RCP85", 
+                                               year == 2055, 
+                                               interval == "mon"),
+                                  add = c("depth", "month")) |>
+  select(all_of(cfg$keep_vars))
+```
+
+```{r forecast}
+forecast_2075_RCP85 = predict_stars(model_fits, covars_rcp85_2075)
+forecast_2075_RCP85
+forecast_2055_RCP85 = predict_stars(model_fits, covars_rcp85_2055)
+forecast_2055_RCP85
+```
+
+```{r plot_forecast, warning = FALSE}
+plot_prediction(forecast_2075_RCP85['default_btree'])
+plot_prediction(forecast_2055_RCP85['default_btree'])
+```
+Now for RCP45!
+```{r load_2075_RCP45, warning = FALSE}
+covars_rcp46_2075 = read_brickman(db |> filter(scenario == "RCP85", 
+                                               year == 2075, 
+                                               interval == "mon"),
+                                  add = c("depth", "month")) |>
+  select(all_of(cfg$keep_vars))
+covars_rcp45_2055 = read_brickman(db |> filter(scenario == "RCP85", 
+                                               year == 2055, 
+                                               interval == "mon"),
+                                  add = c("depth", "month")) |>
+  select(all_of(cfg$keep_vars))
+```
+
+```{r forecast}
+forecast_2075_RCP45 = predict_stars(model_fits, covars_rcp85_2075)
+forecast_2075_RCP45
+forecast_2055_RCP45 = predict_stars(model_fits, covars_rcp85_2055)
+forecast_2055_RCP45
+```
+```{r plot_forecast, warning = FALSE}
+plot_prediction(forecast_2075_RCP45['default_btree'])
+plot_prediction(forecast_2055_RCP45['default_btree'])
+```
+## Save the predictions
+
+Now we save our predictions.
+
+```{r save_pred}
+# make sure the output directory exists
+path = make_path("predictions")
+
+write_prediction(nowcast,
+                 scientificname = cfg$scientificname,
+                 version = cfg$version,
+                 year = "CURRENT",
+                 scenario = "CURRENT")
+write_prediction(forecast_2075_RCP85,
+                 scientificname = cfg$scientificname,
+                 version = cfg$version,
+                 year = "2075",
+                 scenario = "RCP85")
+write_prediction(forecast_2055_RCP85,
+                 scientificname = cfg$scientificname,
+                 version = cfg$version,
+                 year = "2055",
+                 scenario = "RCP85")
+write_prediction(forecast_2075_RCP45,
+                 scientificname = cfg$scientificname,
+                 version = cfg$version,
+                 year = "2075",
+                 scenario = "RCP45")
+write_prediction(forecast_2055_RCP45,
+                 scientificname = cfg$scientificname,
+                 version = cfg$version,
+                 year = "2055",
+                 scenario = "RCP45")
+```
+

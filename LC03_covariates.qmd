@@ -69,7 +69,7 @@ Whatever selection of variables we decide to model with, we will save this listi
 Before we do commit to a selection of variables, let's turn our attention back to our presence-background points, and look at just those chosen values rather than at values drawn form across the entire domain. Let's open the file that contain our presence-background data during the PRESENT climate scenario.
 
 ```{r present_model_input}
-model_input = read_model_input(scientificname = "Halichoerus grypus")
+model_input = read_model_input(scientificname = "Ammodytes dubius")
 model_input
 ```
 
@@ -114,7 +114,7 @@ Let's make a configuration list that holds 4 items: version identifier ("v1"), s
 ```{r make_config}
 cfg = list(
   version = "v1",
-  scientificname = "Halichoerus grypus",
+  scientificname = "Ammodytes dubius",
   background = "average of observations per month",
   keep_vars =  keep)
 ```
@@ -138,7 +138,7 @@ write_configuration(cfg)
 Let's also save the now updated model_input data (it now includes covariate data for our version "v1").  Keep in mind that this contains all possible covariates (in out case that means we include `Xbtm`) even though we may drop one or more in subsequent steps.
 
 ```{r save_input_data}
-write_model_input(variables, scientificname = "Halichoerus grypus", version = "v1")
+write_model_input(variables, scientificname = "Ammodytes dubius", version = "v1")
 ```
 
 
