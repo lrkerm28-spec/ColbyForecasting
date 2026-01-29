@@ -1,5 +1,5 @@
 ---
-title: "Assirngment 5"
+title: "Assignment 5"
 output: github_document
 ---
 
@@ -90,7 +90,7 @@ plot_prediction(forecast_2075_RCP85['default_btree'])
 plot_prediction(forecast_2055_RCP85['default_btree'])
 ```
 Now for RCP45!
-```{r load_2075_RCP45, warning = FALSE}
+```{r 2075_RCP45, warning = FALSE}
 covars_rcp46_2075 = read_brickman(db |> filter(scenario == "RCP85", 
                                                year == 2075, 
                                                interval == "mon"),
@@ -103,13 +103,13 @@ covars_rcp45_2055 = read_brickman(db |> filter(scenario == "RCP85",
   select(all_of(cfg$keep_vars))
 ```
 
-```{r forecast}
+```{r forecast2}
 forecast_2075_RCP45 = predict_stars(model_fits, covars_rcp85_2075)
 forecast_2075_RCP45
 forecast_2055_RCP45 = predict_stars(model_fits, covars_rcp85_2055)
 forecast_2055_RCP45
 ```
-```{r plot_forecast, warning = FALSE}
+```{r plot_forecast2, warning = FALSE}
 plot_prediction(forecast_2075_RCP45['default_btree'])
 plot_prediction(forecast_2055_RCP45['default_btree'])
 ```

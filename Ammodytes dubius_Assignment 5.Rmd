@@ -1,5 +1,5 @@
 ---
-title: "Ammodytes dubius Assirngment 5"
+title: "Ammodytes dubius Assignment 5"
 output: github_document
 ---
 
@@ -103,13 +103,13 @@ covars_rcp45_2055 = read_brickman(db |> filter(scenario == "RCP85",
   select(all_of(cfg$keep_vars))
 ```
 
-```{r forecast}
+```{r forecast2}
 forecast_2075_RCP45 = predict_stars(model_fits, covars_rcp85_2075)
 forecast_2075_RCP45
 forecast_2055_RCP45 = predict_stars(model_fits, covars_rcp85_2055)
 forecast_2055_RCP45
 ```
-```{r plot_forecast, warning = FALSE}
+```{r plot_forecast2, warning = FALSE}
 plot_prediction(forecast_2075_RCP45['default_btree'])
 plot_prediction(forecast_2055_RCP45['default_btree'])
 ```
